@@ -13,7 +13,7 @@ def temperature_report(city, morning_celsius, afternoon_celsius):
     report = "City: " + city
     report += "\nMorning: " + str((morning_celsius)) + " / " + str(round(morning_fahrenheit,1))
     report += "\nAfternoon: " + str(afternoon_celsius) + " / " + str(round(afternoon_fahrenheit,1))
-    report += "\nTemperature increase: " + str(difference)
+    report += "\nTemperature increase: " + str(round(difference,1))
     return report
 
 a = temperature_report("Hanoi", 21, 28)
