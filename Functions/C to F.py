@@ -19,3 +19,6 @@ def temperature_report(city, morning_celsius, afternoon_celsius):
 a = temperature_report("Hanoi", 21, 28)
 print(a)
 
+#OR:
+
+print(temperature_report("Hanoi, 21, 28))
