@@ -1,0 +1,370 @@
+CODESKULPTOR SIMPLEGUI — QUICK REFERENCE FOR VS CODE
+=====================================================
+Source: https://py2.codeskulptor.org/docs.html#tabs-Python
+Source section: Graphics Modules > SimpleGUI (CodeSkulptor Python 2)
+Prepared: 2026-11-24
+
+PURPOSE
+-------
+A searchable, beginner-friendly reference based on the documented CodeSkulptor
+SimpleGUI interface. It is a condensed guide, not a verbatim copy of the site.
+The signatures below describe the CodeSkulptor API; the local port may differ.
+
+IMPORTANT: IMPORTING IN YOUR TWO ENVIRONMENTS
+---------------------------------------------
+In the original CodeSkulptor editor:
+    import simplegui
+
+In VS Code, using your installed SimpleGUICS2Pygame package:
+    import SimpleGUICS2Pygame.simpleguics2pygame as simplegui
+
+The second import aliases the local implementation as 'simplegui', so the
+rest of the examples can use the same names.
+
+The source page documents CodeSkulptor's browser-based Python 2 environment.
+These examples use Python 3 print() syntax where relevant. The local port is
+not necessarily identical, especially for image/sound loading, fonts, and GUI
+behavior. Test graded course work in CodeSkulptor as required by the course.
+
+CONTENTS (use Cmd+F in VS Code)
+-------------------------------
+1. Concepts and callback signatures
+2. Frames and frame configuration
+3. Control panel: labels, buttons, inputs
+4. Keyboard and mouse handlers
+5. Canvas and drawing
+6. Timers
+7. Images
+8. Sounds
+9. Colors and keyboard constants
+10. Small working patterns
+11. Troubleshooting and source
+
+
+1. CONCEPTS AND CALLBACK SIGNATURES
+===================================
+A FRAME includes a control panel and a canvas.
+The CONTROL PANEL holds labels, buttons, and text inputs.
+The CANVAS is where a drawing handler renders text/shapes/images.
+An EVENT HANDLER (callback) is a function you provide to SimpleGUI; SimpleGUI
+calls it when an event happens. Pass the function NAME, without parentheses.
+
+Handler type               Expected definition
+-------------------------  ---------------------------------------
+Button                     def button_handler():
+Text input                 def input_handler(text):
+Key down / key up          def key_handler(key):
+Mouse click / drag         def mouse_handler(position):
+Canvas draw                def draw_handler(canvas):
+Timer                      def timer_handler():
+
+Examples:
+    frame.add_button('Go', button_handler)  # Correct: handler reference
+    # frame.add_button('Go', button_handler())  # Wrong: calls it immediately
+
+The position argument is a coordinate pair, like (x, y).
+Key handlers receive a key code (integer); use simplegui.KEY_MAP to compare it.
+A timer interval is measured in milliseconds: 1000 ms = 1 second.
+
+
+2. FRAMES AND FRAME CONFIGURATION
+=================================
+Create a frame:
+    frame = simplegui.create_frame(title, canvas_width, canvas_height)
+    frame = simplegui.create_frame(title, canvas_width, canvas_height,
+                                   control_width)
+
+    title           Window title (string)
+    canvas_width    Canvas width in pixels
+    canvas_height   Canvas height in pixels
+    control_width   Optional width of the control panel
+
+Start frame event handling:
+    frame.start()
+
+Set canvas background:
+    frame.set_canvas_background(color)
+
+Measure text width in pixels (does not draw text):
+    width = frame.get_canvas_textwidth(text, size)
+    width = frame.get_canvas_textwidth(text, size, face)
+
+Documented font faces: 'serif' (default), 'sans-serif', 'monospace'.
+
+Example:
+    frame = simplegui.create_frame('Demo', 400, 300)
+    frame.set_canvas_background('Navy')
+    frame.start()
+
+
+3. CONTROL PANEL: LABELS, BUTTONS, INPUTS
+========================================
+Controls appear in the left-hand panel, arranged top to bottom.
+
+Add a label (returns a control object):
+    label = frame.add_label(text)
+    label = frame.add_label(text, width)
+
+Add a button (button handler takes ZERO parameters):
+    button = frame.add_button(text, button_handler)
+    button = frame.add_button(text, button_handler, width)
+
+Add a text entry (input handler takes ONE string parameter):
+    entry = frame.add_input(text, input_handler, width)
+
+Read or change the text of a label, button, or input control:
+    current_text = control.get_text()
+    control.set_text(text)
+
+Example:
+    def clicked():
+        print('Button clicked')
+
+    def submitted(text):
+        print('You entered:', text)
+
+    frame = simplegui.create_frame('Controls', 350, 200)
+    status = frame.add_label('Ready')
+    frame.add_button('Press me', clicked, 120)
+    frame.add_input('Your name', submitted, 150)
+    frame.start()
+
+Input handlers run when the user presses Enter in the input box.
+
+
+4. KEYBOARD AND MOUSE HANDLERS
+==============================
+Register keyboard callbacks:
+    frame.set_keydown_handler(key_handler)
+    frame.set_keyup_handler(key_handler)
+
+Keyboard callback takes one integer key code:
+    def key_handler(key):
+        if key == simplegui.KEY_MAP['left']:
+            print('Left arrow')
+
+Register mouse callbacks:
+    frame.set_mouseclick_handler(mouse_handler)
+    frame.set_mousedrag_handler(mouse_handler)
+
+Mouse callback takes one coordinate pair:
+    def mouse_handler(position):
+        x, y = position
+        print('Mouse at:', x, y)
+
+Mouse click: fires when mouse button is pressed and released.
+Mouse drag: fires on positions reached while dragging.
+
+
+5. CANVAS AND DRAWING
+=====================
+Register a draw callback; it receives the canvas object:
+    frame.set_draw_handler(draw_handler)
+
+    def draw_handler(canvas):
+        # Make draw calls here
+        pass
+
+Draw text:
+    canvas.draw_text(text, point, font_size, font_color)
+    canvas.draw_text(text, point, font_size, font_color, font_face)
+    # point specifies the lower-left corner of the text.
+
+Draw a line:
+    canvas.draw_line(point1, point2, line_width, line_color)
+
+Draw connected segments (not automatically closed):
+    canvas.draw_polyline(point_list, line_width, line_color)
+
+Draw a polygon (closed shape):
+    canvas.draw_polygon(point_list, line_width, line_color)
+    canvas.draw_polygon(point_list, line_width, line_color, fill_color)
+
+Draw a circle:
+    canvas.draw_circle(center_point, radius, line_width, line_color)
+    canvas.draw_circle(center_point, radius, line_width, line_color, fill_color)
+
+Draw a pixel-sized point:
+    canvas.draw_point(point, color)
+
+Draw an image (see section 7):
+    canvas.draw_image(image, center_source, width_height_source,
+                      center_dest, width_height_dest)
+    canvas.draw_image(image, center_source, width_height_source,
+                      center_dest, width_height_dest, rotation)
+
+Coordinates are usually expressed as (x, y) tuples or [x, y] lists.
+The rotation argument for images is in radians (clockwise).
+A positive line_width is measured in pixels.
+
+Example:
+    def draw(canvas):
+        canvas.draw_text('Hello!', (30, 50), 24, 'White')
+        canvas.draw_line((10, 90), (250, 90), 2, 'Green')
+        canvas.draw_circle((150, 140), 35, 3, 'Red', 'Yellow')
+
+    frame = simplegui.create_frame('Drawing', 300, 200)
+    frame.set_draw_handler(draw)
+    frame.start()
+
+
+6. TIMERS
+=========
+Create timer:
+    timer = simplegui.create_timer(interval, timer_handler)
+
+Timer methods:
+    timer.start()        # Start or restart
+    timer.stop()         # Stop; can restart later
+    timer.is_running()   # Returns True or False
+
+The timer handler takes ZERO parameters and is called repeatedly at the
+specified interval (in milliseconds) while the timer is running.
+
+Example:
+    count = 0
+
+    def tick():
+        global count
+        count += 1
+        print(count)
+
+    timer = simplegui.create_timer(1000, tick)
+    timer.start()
+
+
+7. IMAGES
+=========
+Load a picture (CodeSkulptor expects a URL):
+    picture = simplegui.load_image(URL)
+
+Inspect image dimensions:
+    width = picture.get_width()
+    height = picture.get_height()
+
+Draw it in a canvas draw handler:
+    canvas.draw_image(picture,
+                      center_source, width_height_source,
+                      center_dest, width_height_dest)
+
+Parameters:
+    center_source       Center of the source region in the image
+    width_height_source Size of the source region, as (width, height)
+    center_dest         Center where image appears on canvas
+    width_height_dest   Display size, as (width, height)
+    rotation            Optional clockwise angle in radians
+
+To draw the whole image, its source center is normally (width/2, height/2)
+and source size (width, height).
+Different destination size scales the picture.
+
+IMPORTANT: CodeSkulptor's URL loading behavior is browser-specific. Local
+SimpleGUICS2Pygame image loading may behave differently, especially with
+network URLs or local paths. Consult the port's docs if an asset fails.
+
+
+8. SOUNDS
+=========
+Load a sound (CodeSkulptor expects a URL):
+    sound = simplegui.load_sound(URL)
+
+Sound operations:
+    sound.play()              # Start/resume playback
+    sound.pause()             # Pause playback
+    sound.rewind()            # Return to start
+    sound.set_volume(volume)  # Range: 0 (silent) to 1.0 (max)
+
+To replay from the beginning, rewind and then play again.
+Sound file formats and access can depend on the browser or local port.
+
+
+9. COLORS AND KEYBOARD CONSTANTS
+================================
+Common documented colors:
+    Aqua, Black, Blue, Fuchsia, Gray, Green, Lime, Maroon,
+    Navy, Olive, Orange, Purple, Red, Silver, Teal, White, Yellow
+
+CodeSkulptor also documents HTML/CSS-style colors. Support for advanced
+CSS color notation may differ in your local SimpleGUICS2Pygame port.
+
+Keyboard constants:
+    simplegui.KEY_MAP['left']
+    simplegui.KEY_MAP['right']
+    simplegui.KEY_MAP['up']
+    simplegui.KEY_MAP['down']
+    simplegui.KEY_MAP['space']
+    simplegui.KEY_MAP['a']       # Letters a-z / A-Z
+    simplegui.KEY_MAP['0']       # Digits 0-9
+
+Compare a key handler's key integer to the relevant KEY_MAP entry. Do not
+hardcode a key integer if KEY_MAP provides the meaning you need.
+
+
+10. SMALL WORKING PATTERNS
+==========================
+A. Button + label
+-----------------
+    def press():
+        label.set_text('Clicked!')
+
+    frame = simplegui.create_frame('Button example', 300, 200)
+    label = frame.add_label('Not clicked yet')
+    frame.add_button('Click', press)
+    frame.start()
+
+B. Canvas + draw handler
+------------------------
+    def draw(canvas):
+        canvas.draw_text('Hello SimpleGUI', (20, 80), 22, 'White')
+
+    frame = simplegui.create_frame('Canvas example', 350, 180)
+    frame.set_draw_handler(draw)
+    frame.start()
+
+C. Keyboard handler
+-------------------
+    def keydown(key):
+        if key == simplegui.KEY_MAP['space']:
+            print('Space pressed')
+
+    frame = simplegui.create_frame('Keys', 300, 200)
+    frame.set_keydown_handler(keydown)
+    frame.start()
+
+D. Mouse handler
+----------------
+    def click(pos):
+        print('Clicked at:', pos)
+
+    frame = simplegui.create_frame('Mouse', 300, 200)
+    frame.set_mouseclick_handler(click)
+    frame.start()
+
+NOTE: Before running any of these standalone snippets, add the appropriate
+import statement from the top of this reference.
+
+
+11. TROUBLESHOOTING AND SOURCE
+==============================
+Problem: ModuleNotFoundError: No module named 'SimpleGUICS2Pygame'
+  -> Make sure VS Code uses the .venv interpreter where the port is installed.
+
+Problem: 'No such file or directory' when running a script
+  -> Check the script path and quote folder names containing spaces in shell
+     commands. In VS Code, the correct interpreter is only part of the story;
+     the launch command also must refer to the actual script filename.
+
+Problem: Works in VS Code but fails in CodeSkulptor
+  -> The engines differ. Check the import, Python 2 vs. Python 3 behavior,
+     asset URLs, and the precise method usage expected by the course.
+
+Source (CodeSkulptor documentation, not the port's documentation):
+    https://py2.codeskulptor.org/docs.html#tabs-Python
+    See Graphics Modules > SimpleGUI sections:
+      Frame / Control Objects / Canvas / Timers / Images / Sounds / Constants
+
+Local port docs for implementation-specific questions:
+    https://simpleguics2pygame.readthedocs.io/en/latest/
+
+This reference covers the SimpleGUI API, not the full Python standard library,
+SimpleMap, or SimplePlot.
